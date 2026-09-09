@@ -15,6 +15,8 @@ class AnalysisScope(BaseModel):
         description="The most important analytical questions that should be investigated in order to address the business problem and achieve the analysis goal."
     )
 
+    
+
 
 ANALYSIS_SCOPING_INSTRUCTIONS = """
 You are the Analysis Scoping Agent of DataCrew, an AI multi-agent data analysis system.
@@ -52,6 +54,6 @@ Keep the analysis scope concise, practical, and focused.
 analysis_scoping_agent = Agent(
     name="Analysis Scoping Agent",
     instructions=ANALYSIS_SCOPING_INSTRUCTIONS,
-    model="gpt-5.4-mini",
+    model="gpt-5.6-luna",
     output_type=AnalysisScope,
 )

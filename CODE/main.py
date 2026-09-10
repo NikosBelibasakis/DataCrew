@@ -2,17 +2,16 @@ import gradio as gr
 from dotenv import load_dotenv
 from agents import Runner
 from pydantic import BaseModel
+
 from datacrew_agents.analysis_scoping import (
     analysis_scoping_agent,
     AnalysisScope,
 )
-
 from datacrew_agents.data_prep import (
     data_preparation_agent,
     desktop_commander,
     DataPreparationResult,
 )
-
 from datacrew_agents.analysis_report import (
     analysis_report_agent,
     AnalysisReportResult,
@@ -30,11 +29,8 @@ class DataCrewState(BaseModel):
 
 async def run_workflow(business_problem, analysis_goal, state):
 
-    # ------------------------------
-    # 1. Analysis Scoping Agent
-    # ------------------------------
-
-    user_input = f"""
+    # 1. Analysis Scoping
+    scope_input = f"""
 Business Problem:
 {business_problem}
 
@@ -44,16 +40,13 @@ Analysis Goal:
 
     scope_result = await Runner.run(
         analysis_scoping_agent,
-        user_input
+        scope_input,
     )
 
     state.analysis_scope = scope_result.final_output
 
 
-    # ------------------------------
-    # 2. Data Preparation Agent
-    # ------------------------------
-
+    # 2. Data Preparation
     preparation_input = f"""
 Analysis Scope:
 
@@ -62,24 +55,18 @@ Analysis Scope:
 Use this analysis scope to prepare the available data.
 """
 
-
-    # Desktop Commander is required by both
-    # the Preparation and Analysis agents
     async with desktop_commander:
 
         preparation_result = await Runner.run(
             data_preparation_agent,
             preparation_input,
-            max_turns=30
+            max_turns=30,
         )
 
         state.preparation_result = preparation_result.final_output
 
 
-        # ------------------------------
-        # 3. Data Analysis & Reporting Agent
-        # ------------------------------
-
+        # 3. Data Analysis & Reporting
         analysis_input = f"""
 Analysis Scope:
 
@@ -89,14 +76,14 @@ Data Preparation Result:
 
 {state.preparation_result.model_dump_json(indent=2)}
 
-Use the analysis scope and the prepared data information
-to perform the data analysis and generate the final PowerPoint report.
+Use this context to perform the data analysis
+and generate the final PowerPoint report.
 """
 
         analysis_result = await Runner.run(
             analysis_report_agent,
             analysis_input,
-            max_turns=40
+            max_turns=40,
         )
 
         state.analysis_result = analysis_result.final_output
@@ -112,55 +99,51 @@ to perform the data analysis and generate the final PowerPoint report.
 
 with gr.Blocks(title="DataCrew") as demo:
 
-    state = gr.State(DataCrewState())
-
     gr.Markdown("# DataCrew")
     gr.Markdown("AI Multi-Agent Data Analysis System")
 
+    state = gr.State(DataCrewState())
+
     business_problem = gr.Textbox(
         label="Business Problem",
-        placeholder="Describe the business problem you want to investigate...",
-        lines=4
+        lines=4,
     )
 
     analysis_goal = gr.Textbox(
         label="Analysis Goal",
-        placeholder="Describe what you want the analysis to achieve...",
-        lines=4
+        lines=4,
     )
 
-    submit_button = gr.Button("Start Analysis")
-
+    run_button = gr.Button("Run DataCrew")
 
     scope_output = gr.Code(
         label="Analysis Scope",
-        language="json"
+        language="json",
     )
 
     preparation_output = gr.Code(
-        label="Data Preparation Result",
-        language="json"
+        label="Data Preparation",
+        language="json",
     )
 
     analysis_output = gr.Code(
-        label="Analysis & Reporting Result",
-        language="json"
+        label="Analysis & Reporting",
+        language="json",
     )
 
-
-    submit_button.click(
+    run_button.click(
         fn=run_workflow,
         inputs=[
             business_problem,
             analysis_goal,
-            state
+            state,
         ],
         outputs=[
             state,
             scope_output,
             preparation_output,
-            analysis_output
-        ]
+            analysis_output,
+        ],
     )
 
 

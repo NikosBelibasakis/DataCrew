@@ -35,7 +35,8 @@ desktop_commander = MCPServerStdio(
             "@wonderwhy-er/desktop-commander@0.2.47"
         ],
     },
-    cache_tools_list=True
+    cache_tools_list=True,
+    client_session_timeout_seconds=60
 )
 
 
@@ -72,13 +73,14 @@ Your tasks are to:
 
 Do not perform business analysis.
 Do not generate insights, visualizations, or recommendations.
+
 """
 
 
 data_preparation_agent = Agent(
     name="Data Preparation Agent",
     instructions=DATA_PREPARATION_INSTRUCTIONS,
-    model="gpt-5.6-luna",
+    model="gpt-5.6-terra",
     output_type=DataPreparationResult,
     mcp_servers=[desktop_commander],
 )

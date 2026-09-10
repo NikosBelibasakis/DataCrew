@@ -48,12 +48,13 @@ Do not make assumptions that are not supported by the user's input.
 Do not invent business context.
 
 Keep the analysis scope concise, practical, and focused.
+
 """
 
 
 analysis_scoping_agent = Agent(
     name="Analysis Scoping Agent",
     instructions=ANALYSIS_SCOPING_INSTRUCTIONS,
-    model="gpt-5.6-luna",
+    model="gpt-5.6-terra",
     output_type=AnalysisScope,
 )
